@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MRI Disease Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🧠 MRI Disease Detection</h1>
+    <p class="subtitle">Upload an MRI scan to detect Alzheimer’s stage or Brain Tumor type.</p>
+
+    <!-- Upload Box -->
+    <form id="upload-form" class="upload-box">
+      <input type="file" id="file-input" name="file" accept="image/*" hidden>
+      <label for="file-input" class="file-label">📤 Drag & Drop or Click to Upload</label>
+      <button type="submit" class="btn">Predict</button>
+    </form>
+
+    <!-- Image Preview -->
+    <div id="preview-container"></div>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden loader">
+      <div class="pulse-brain">🧠</div>
+      <p>Analyzing MRI Scan...</p>
+    </div>
+
+    <!-- Results -->
+    <div id="result" class="hidden result-card">
+      <h2>Prediction Result</h2>
+      <p><strong>Class:</strong> <span id="pred-class"></span></p>
+
+      <!-- Confidence Gauge -->
+      <div class="gauge">
+        <svg>
+          <circle class="bg" cx="50" cy="50" r="45"></circle>
+          <circle class="progress" cx="50" cy="50" r="45"></circle>
+        </svg>
+        <div class="gauge-text" id="confidence">0%</div>
+      </div>
+
+      <h3>Probabilities</h3>
+      <div id="prob-bars"></div>
+
+      <h3>Recommendations</h3>
+      <div id="recommendation"></div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

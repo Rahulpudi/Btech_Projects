@@ -1,0 +1,44 @@
+{
+    "class_names": [
+        "Control_Axial",
+        "Control_Saggital",
+        "Glioma",
+        "MS_Axial",
+        "MS_Saggital",
+        "Meningioma",
+        "MildDemented",
+        "ModerateDemented",
+        "NonDemented",
+        "Normal",
+        "Pituitary",
+        "VeryMildDemented"
+    ],
+    "label2idx": {
+        "Control_Axial": 0,
+        "Control_Saggital": 1,
+        "Glioma": 2,
+        "MS_Axial": 3,
+        "MS_Saggital": 4,
+        "Meningioma": 5,
+        "MildDemented": 6,
+        "ModerateDemented": 7,
+        "NonDemented": 8,
+        "Normal": 9,
+        "Pituitary": 10,
+        "VeryMildDemented": 11
+    },
+    "idx2label": {
+        "0": "Control_Axial",
+        "1": "Control_Saggital",
+        "2": "Glioma",
+        "3": "MS_Axial",
+        "4": "MS_Saggital",
+        "5": "Meningioma",
+        "6": "MildDemented",
+        "7": "ModerateDemented",
+        "8": "NonDemented",
+        "9": "Normal",
+        "10": "Pituitary",
+        "11": "VeryMildDemented"
+    }
+}

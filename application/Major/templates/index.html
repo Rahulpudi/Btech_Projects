@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroScan AI — Brain Disease Classifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #080c14;
+      --surface:   #0d1422;
+      --card:      #111827;
+      --border:    #1e2d45;
+      --accent:    #00c9ff;
+      --accent2:   #7b61ff;
+      --warn:      #ff6b6b;
+      --text:      #e2e8f4;
+      --muted:     #6b7fa3;
+      --mono:      'Space Mono', monospace;
+      --sans:      'Sora', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated grid background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,201,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,201,255,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Glowing orbs ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 400px; height: 400px; background: rgba(0,201,255,.12); top: -120px; left: -120px; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(123,97,255,.1);  bottom: -80px; right: -80px; animation-delay: -6s; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px, 20px) scale(1.05); } }
+
+    /* ── Layout ── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 56px;
+      animation: fadeUp .7s ease both;
+    }
+    .logo-mark {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 24px rgba(0,201,255,.35);
+    }
+    .logo-text h1 {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      letter-spacing: -.5px;
+      color: #fff;
+    }
+    .logo-text p {
+      font-size: .78rem;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Hero card ── */
+    .hero {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      animation: fadeUp .7s .1s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .hero-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hero-title span { color: var(--accent); }
+    .hero-desc {
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    /* ── Classes pill row ── */
+    .classes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 24px 0 36px;
+    }
+    .pill {
+      font-family: var(--mono);
+      font-size: .7rem;
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--surface);
+    }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 36px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .25s, background .25s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(0,201,255,.04);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-icon { font-size: 2.4rem; margin-bottom: 12px; }
+    .upload-label {
+      font-size: .95rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .upload-label strong { color: var(--accent); }
+    .upload-hint { font-size: .78rem; color: var(--muted); }
+    .file-preview {
+      margin-top: 16px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(0,201,255,.06);
+      border: 1px solid rgba(0,201,255,.2);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--accent);
+    }
+
+    /* ── Submit btn ── */
+    .btn-predict {
+      display: block;
+      width: 100%;
+      margin-top: 24px;
+      padding: 15px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-family: var(--mono);
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-predict:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-predict:active { transform: translateY(0); }
+
+    /* ── Error ── */
+    .error-box {
+      margin-top: 20px;
+      background: rgba(255,107,107,.08);
+      border: 1px solid rgba(255,107,107,.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      color: var(--warn);
+      font-size: .88rem;
+      display: flex; gap: 10px; align-items: center;
+    }
+
+    /* ── Feature pills row ── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+    }
+    .feature-card .f-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .feature-card h3 { font-size: .85rem; font-weight: 600; margin-bottom: 4px; }
+    .feature-card p  { font-size: .75rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      margin-top: 24px;
+      padding: 14px 18px;
+      background: rgba(123,97,255,.06);
+      border: 1px solid rgba(123,97,255,.2);
+      border-radius: 12px;
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.6;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .disclaimer strong { color: var(--accent2); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .features { grid-template-columns: 1fr; }
+      .hero-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="wrapper">
+    <header>
+      <div class="logo-mark">🧠</div>
+      <div class="logo-text">
+        <h1>NeuroScan AI</h1>
+        <p>Brain Disease Classification System</p>
+      </div>
+    </header>
+
+    <div class="hero">
+      <div class="hero-title">AI-Powered Brain <span>MRI Analysis</span></div>
+      <p class="hero-desc">
+        Upload a brain MRI scan to receive an instant classification with Grad-CAM explainability.
+        The model detects tumours, Alzheimer's stages, and Multiple Sclerosis across 12 classes.
+      </p>
+
+      <div class="classes">
+        {% for label in ['Glioma', 'Meningioma', 'Pituitary', 'Normal', 'MildDemented',
+                          'ModerateDemented', 'NonDemented', 'VeryMildDemented',
+                          'MS_Axial', 'MS_Saggital', 'Control_Axial', 'Control_Saggital'] %}
+          <span class="pill">{{ label }}</span>
+        {% endfor %}
+      </div>
+
+      <form action="/predict" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="upload-zone" id="dropZone">
+          <input type="file" name="image" accept=".jpg,.jpeg,.png" id="fileInput" required />
+          <div class="upload-icon">📂</div>
+          <p class="upload-label"><strong>Click to browse</strong> or drag & drop your MRI scan</p>
+          <p class="upload-hint">JPG · JPEG · PNG — max 16 MB</p>
+          <div class="file-preview" id="filePreview">
+            <span>📄</span><span id="fileName"></span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-predict" id="submitBtn">
+          ⚡ Analyse Image
+        </button>
+      </form>
+
+      {% if error %}
+        <div class="error-box">⚠️ {{ error }}</div>
+      {% endif %}
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="f-icon">🔬</div>
+        <h3>UNET_PLUS_PLUS+EfficientNetV2-S + XGBoost</h3>
+        <p>Deep feature extraction combined with gradient boosting for robust multi-class prediction.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">🗺️</div>
+        <h3>Grad-CAM Heatmaps</h3>
+        <p>Brain-masked gradient activation maps highlight the exact regions driving each decision.</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">📊</div>
+        <h3>12 Disease Classes</h3>
+        <p>Covers brain tumours, Alzheimer's dementia stages, MS lesions, and healthy controls.</p>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>⚠️ Medical Disclaimer:</strong> This tool is intended for research and educational
+      purposes only. Predictions are generated by an AI model and <strong>must not</strong> replace
+      professional medical diagnosis. Always consult a qualified neurologist or radiologist.
+    </div>
+  </div>
+
+  <script>
+    const input    = document.getElementById('fileInput');
+    const preview  = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const dropZone = document.getElementById('dropZone');
+    const submitBtn = document.getElementById('submitBtn');
+
+    input.addEventListener('change', () => {
+      if (input.files.length) {
+        fileName.textContent = input.files[0].name;
+        preview.style.display = 'flex';
+      }
+    });
+
+    ['dragover', 'dragenter'].forEach(e =>
+      dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag-over'); })
+    );
+    ['dragleave', 'drop'].forEach(e =>
+      dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag-over'); })
+    );
+
+    document.getElementById('uploadForm').addEventListener('submit', () => {
+      submitBtn.textContent = '⏳ Analysing…';
+      submitBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
